@@ -70,7 +70,7 @@ namespace Sales_SQL_C_
 
                 //4. Видалити продавця або покупця по id
                 Console.WriteLine("\t4. Видалити продавця або покупця по id");
-                bool key = GetBool("Delete ", "seller", "buyer");
+                bool key = GetBool("Do you want to remove ", "seller", "buyer");
                 int Id = GetInt($"\tEnter {(key ? "seller" : "buyer")} ID : ");
                 try
                 {
@@ -186,7 +186,7 @@ namespace Sales_SQL_C_
         static bool GetBool(string message,string variant1,string variant2)
         {
             int choose = 0;
-            while (choose !=1 && choose != 2){ choose = GetInt($"\tYou wont {message} {variant1}[1] or {variant2}[2] : "); };
+            while (choose !=1 && choose != 2){ choose = GetInt($"\t {message} {variant1}[1] or {variant2}[2] : "); };
             return choose == 1;
         }
 
