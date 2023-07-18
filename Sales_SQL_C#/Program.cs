@@ -89,7 +89,6 @@ namespace Sales_SQL_C_
                     Console.WriteLine();
                 }
                 catch (SqlException sqlex) { Console.WriteLine(sqlex.Message); }
-                finally { WClear();}
             }
         }
         //1
