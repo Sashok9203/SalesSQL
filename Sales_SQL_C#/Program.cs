@@ -39,18 +39,18 @@ namespace Sales_SQL_C_
                 //2. Відобразити інформацію про всі продажі за певний період
                 Console.WriteLine("\t2. Відобразити інформацію про всі продажі за певний період");
                 int y1, y2, m1, m2, d1, d2;
-                DateTime startTime, endTime;
+                DateTime startDate, endDate;
                 try
                 {
                     y1 = GetInt("\tEnter start date year : ");
                     m1 = GetInt("\tEnter start date month : ");
                     d1 = GetInt("\tEnter start date day : ");
-                    startTime = new DateTime(y1, m1, d1);
+                    startDate = new DateTime(y1, m1, d1);
                     y2 = GetInt("\tEnter end date year : ");
                     m2 = GetInt("\tEnter end date month : ");
                     d2 = GetInt("\tEnter end date day : ");
-                    endTime = new DateTime(y2, m2, d2);
-                    GetSalesInfo(startTime, endTime, connection);
+                    endDate = new DateTime(y2, m2, d2);
+                    GetSalesInfo(startDate, endDate, connection);
                 }
                 catch (SqlException sqlex) { Console.WriteLine(sqlex.Message);}
                 catch (Exception ex) { Console.WriteLine(ex.Message);}
