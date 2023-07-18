@@ -25,9 +25,9 @@ namespace Sales_SQL_C_
                 int sId, bId;
                 double sAmmount;
                 Console.WriteLine("\t1 - Додати нову продажу/покупку");
-                sId =  GetInt("\tEnter seller ID :");
-                bId = GetInt("\tEnter buyer ID :");
-                sAmmount = GetDouble("\tSale ammount :");
+                sId =  GetInt("\tEnter seller ID : ");
+                bId = GetInt("\tEnter buyer ID : ");
+                sAmmount = GetDouble("\tSale ammount : ");
                 try
                 {
                     int addedSales = AddNewSale(sId, bId, sAmmount, DateTime.Now, connection);
@@ -59,9 +59,9 @@ namespace Sales_SQL_C_
                 //3. Показати останню покупку певного покупця по імені та прізвищу
                 Console.WriteLine("\t3. Показати останню покупку певного покупця по імені та прізвищу");
                 string name, surname;
-                Console.Write("Enter seller name :");
+                Console.Write("Enter seller name : ");
                 name = Console.ReadLine() ?? "";
-                Console.Write("Enter seller surname :");
+                Console.Write("Enter seller surname : ");
                 surname = Console.ReadLine() ?? "";
 
                 try { GetLastSale(name, surname, connection); }
@@ -71,8 +71,7 @@ namespace Sales_SQL_C_
                 //4. Видалити продавця або покупця по id
                 Console.WriteLine("\t4. Видалити продавця або покупця по id");
                 bool key = GetBool("Delete ", "seller", "buyer");
-                int Id = key? GetInt("\tEnter seller ID :"): GetInt("\tEnter buyer ID :");
-
+                int Id = GetInt($"\tEnter {(key ? "seller" : "buyer")} ID : ");
                 try
                 {
                     int deleted = DelSellelBuyer(Id, connection, key);
