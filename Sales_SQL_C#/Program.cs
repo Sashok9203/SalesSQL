@@ -52,7 +52,6 @@ namespace Sales_SQL_C_
                     endDate = new DateTime(y2, m2, d2);
                     GetSalesInfo(startDate, endDate, connection);
                 }
-                catch (SqlException sqlex) { Console.WriteLine(sqlex.Message);}
                 catch (Exception ex) { Console.WriteLine(ex.Message);}
                 finally { WClear(); }
 
