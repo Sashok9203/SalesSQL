@@ -32,7 +32,6 @@ namespace Sales_SQL_C_
                 {
                     int addedSales = AddNewSale(sId, bId, sAmmount, DateTime.Now, connection);
                     Console.WriteLine($"{addedSales} sales added...");
-                    Console.WriteLine();
                 }
                 catch (SqlException sqlex) { Console.WriteLine(sqlex.Message);}
                 finally { WClear(); }
@@ -52,7 +51,6 @@ namespace Sales_SQL_C_
                     d2 = GetInt("\tEnter end date day : ");
                     endTime = new DateTime(y2, m2, d2);
                     GetSalesInfo(startTime, endTime, connection);
-                    Console.WriteLine();
                 }
                 catch (SqlException sqlex) { Console.WriteLine(sqlex.Message);}
                 catch (Exception ex) { Console.WriteLine(ex.Message);}
@@ -78,8 +76,7 @@ namespace Sales_SQL_C_
                 try
                 {
                     int deleted = DelSellelBuyer(Id, connection, key);
-                    Console.WriteLine($"{deleted} rows deleted...");
-                    Console.WriteLine();
+                    Console.WriteLine($"{deleted} {(key ? "seller(s)" : "buyer(s)")} deleted...");
                 }
                 catch (SqlException sqlex) { Console.WriteLine(sqlex.Message); }
                 finally { WClear(); }
