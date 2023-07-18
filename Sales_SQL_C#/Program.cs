@@ -20,6 +20,7 @@ namespace Sales_SQL_C_
                 Console.WriteLine("Connected!");
                 Console.ReadKey();
                 Console.Clear();
+
                 //1 - Додати нову продажу/покупку
                 int sId, bId;
                 double sAmmount;
@@ -34,13 +35,7 @@ namespace Sales_SQL_C_
                     Console.WriteLine();
                 }
                 catch (SqlException sqlex) { Console.WriteLine(sqlex.Message);}
-                finally 
-                {
-                    Console.ReadKey();
-                    Console.Clear();
-                }
-                
-                
+                finally { WClear(); }
 
                 //2. Відобразити інформацію про всі продажі за певний період
                 Console.WriteLine("\t2. Відобразити інформацію про всі продажі за певний період");
@@ -61,13 +56,7 @@ namespace Sales_SQL_C_
                 }
                 catch (SqlException sqlex) { Console.WriteLine(sqlex.Message);}
                 catch (Exception ex) { Console.WriteLine(ex.Message);}
-                finally
-                {
-                    Console.ReadKey();
-                    Console.Clear();
-                }
-               
-                
+                finally { WClear(); }
 
                 //3. Показати останню покупку певного покупця по імені та прізвищу
                 Console.WriteLine("\t3. Показати останню покупку певного покупця по імені та прізвищу");
@@ -79,31 +68,32 @@ namespace Sales_SQL_C_
 
                 try { GetLastSale(name, surname, connection); }
                 catch (SqlException sqlex) { Console.WriteLine(sqlex.Message);}
-                finally
-                {
-                    Console.ReadKey();
-                    Console.Clear();
-                }
-
+                finally { WClear(); }
 
                 //4. Видалити продавця або покупця по id
                 Console.WriteLine("\t4. Видалити продавця або покупця по id");
                 bool key = GetBool("Delete ", "seller", "buyer");
                 int Id = key? GetInt("\tEnter seller ID :"): GetInt("\tEnter buyer ID :");
-                int deleted = DelSellelBuyer(Id, connection, key);
-                Console.WriteLine($"{deleted} rows deleted...");
-                Console.WriteLine();
-                Console.ReadKey();
-                Console.Clear();
+
+                try
+                {
+                    int deleted = DelSellelBuyer(Id, connection, key);
+                    Console.WriteLine($"{deleted} rows deleted...");
+                    Console.WriteLine();
+                }
+                catch (SqlException sqlex) { Console.WriteLine(sqlex.Message); }
+                finally { WClear(); }
 
                 //5. Показати продавця, загальна сума продаж якого є найбільшою
                 Console.WriteLine("\t5. Показати продавця, загальна сума продаж якого є найбільшою");
-                GetTopBuyer(connection);
-                Console.WriteLine();
-                Console.ReadKey();
-                Console.Clear();
+                try
+                {
+                    GetTopBuyer(connection);
+                    Console.WriteLine();
+                }
+                catch (SqlException sqlex) { Console.WriteLine(sqlex.Message); }
+                finally { WClear();}
             }
-
         }
         //1
         static int AddNewSale(int SellerId,int BuyerId,double SaleAmount,DateTime saleDate, SqlConnection connection)
@@ -116,6 +106,7 @@ namespace Sales_SQL_C_
             cmd.Parameters.AddWithValue("@SaleDate", saleDate.Date);
             return cmd.ExecuteNonQuery();
         }
+
         //2
         static void GetSalesInfo(DateTime startDate, DateTime endDate, SqlConnection connection)
         {
@@ -129,6 +120,7 @@ namespace Sales_SQL_C_
             SqlDataReader reader = cmd.ExecuteReader();
             ReaderShow(reader);
         }
+
         //3
         static void GetLastSale(string name, string surname, SqlConnection connection)
         {
@@ -141,6 +133,7 @@ namespace Sales_SQL_C_
             SqlDataReader reader = cmd.ExecuteReader();
             ReaderShow(reader);
         }
+
         //4
         static int DelSellelBuyer(int Id , SqlConnection connection , bool sellerId = true)
         {
@@ -148,6 +141,7 @@ namespace Sales_SQL_C_
             SqlCommand cmd = new(sqlQuery, connection);
             return cmd.ExecuteNonQuery();
         }
+
         //5 
         static void GetTopBuyer(SqlConnection connection)
         {
@@ -194,11 +188,10 @@ namespace Sales_SQL_C_
             reader.Close();
         }
 
-
         static bool GetBool(string message,string variant1,string variant2)
         {
             int choose = 0;
-            while (choose !=1 && choose != 2){ choose = GetInt($" You wont {message} {variant1}[1] or {variant2}[2] : "); };
+            while (choose !=1 && choose != 2){ choose = GetInt($"\tYou wont {message} {variant1}[1] or {variant2}[2] : "); };
             return choose == 1;
         }
 
@@ -209,12 +202,19 @@ namespace Sales_SQL_C_
             while (!int.TryParse(Console.ReadLine(), out res));
             return res;
         }
+
         static double GetDouble(string message)
         {
             double res;
             do { Console.Write(message); }
             while (!double.TryParse(Console.ReadLine(), out res));
             return res;
+        }
+
+        static void WClear()
+        {
+            Console.ReadKey();
+            Console.Clear();
         }
 
     }
