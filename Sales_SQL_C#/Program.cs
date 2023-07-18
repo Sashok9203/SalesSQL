@@ -30,8 +30,8 @@ namespace Sales_SQL_C_
                 sAmmount = GetDouble("\tSale ammount : ");
                 try
                 {
-                    int addedSales = AddNewSale(sId, bId, sAmmount, DateTime.Now, connection);
-                    Console.WriteLine($"{addedSales} sales added...");
+                    AddNewSale(sId, bId, sAmmount, DateTime.Now, connection);
+                    Console.WriteLine("\tSale added...");
                 }
                 catch (SqlException sqlex) { Console.WriteLine(sqlex.Message);}
                 finally { WClear(); }
