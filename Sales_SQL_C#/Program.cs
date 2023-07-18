@@ -59,12 +59,12 @@ namespace Sales_SQL_C_
                 //3. Показати останню покупку певного покупця по імені та прізвищу
                 Console.WriteLine("\t3. Показати останню покупку певного покупця по імені та прізвищу");
                 string name, surname;
-                Console.Write("Enter seller name : ");
+                Console.Write("Enter buyer name : ");
                 name = Console.ReadLine() ?? "";
-                Console.Write("Enter seller surname : ");
+                Console.Write("Enter buyer surname : ");
                 surname = Console.ReadLine() ?? "";
 
-                try { GetLastSale(name, surname, connection); }
+                try { GetLastBuy(name, surname, connection); }
                 catch (SqlException sqlex) { Console.WriteLine(sqlex.Message);}
                 finally { WClear(); }
 
@@ -117,11 +117,11 @@ namespace Sales_SQL_C_
         }
 
         //3
-        static void GetLastSale(string name, string surname, SqlConnection connection)
+        static void GetLastBuy(string name, string surname, SqlConnection connection)
         {
-            string sqlQuery = "select top 1  concat(sl.Name,' ',sl.Surname) as [Seller], s.SaleDate as [Last Sale Date],s.SaleAmount as [Sale Amount] " +
-                              "from Sales as s join Sellers as sl on sl.Id = s.SellerId " +
-                              "where  concat(sl.Name,sl.Surname) = concat(@name,@surname) order by s.SaleDate desc";
+            string sqlQuery = "select top 1  concat(b.Name,' ',b.Surname) as [Buyer], s.SaleDate as [Last Buy Date],s.SaleAmount as [Sale Amount] " +
+                              "from Sales as s join Buyers as b on b.Id = s.BuyerId " +
+                              "where  concat(b.Name,b.Surname) = concat(@name,@surname) order by s.SaleDate desc";
             SqlCommand cmd = new (sqlQuery, connection);
             cmd.Parameters.AddWithValue("@name",name);
             cmd.Parameters.AddWithValue("@surname", surname);
