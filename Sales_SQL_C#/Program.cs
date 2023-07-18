@@ -1,5 +1,9 @@
 ﻿using System.Configuration;
 using System.Data.SqlClient;
+using System.Security.Cryptography;
+using System.Text;
+using System.Transactions;
+using System.Xml.Linq;
 
 namespace Sales_SQL_C_
 {
@@ -7,21 +11,97 @@ namespace Sales_SQL_C_
     {
         static void Main(string[] args)
         {
-
+            Console.OutputEncoding = Encoding.UTF8;
             string connStr = ConfigurationManager.ConnectionStrings["connStr"].ConnectionString;
             using (SqlConnection connection = new(connStr))
             {
+                Console.Write("Connection to database....");
                 connection.Open();
                 Console.WriteLine("Connected!");
-
+                Console.ReadKey();
+                Console.Clear();
                 //1 - Додати нову продажу/покупку
-                int addedSales = AddNewSale(1, 1, 3500, DateTime.Now, connection);
-                Console.WriteLine($"{addedSales} sales added...");
-                Console.WriteLine();
+                int sId, bId;
+                double sAmmount;
+                Console.WriteLine("\t1 - Додати нову продажу/покупку");
+                sId =  GetInt("\tEnter seller ID :");
+                bId = GetInt("\tEnter buyer ID :");
+                sAmmount = GetDouble("\tSale ammount :");
+                try
+                {
+                    int addedSales = AddNewSale(sId, bId, sAmmount, DateTime.Now, connection);
+                    Console.WriteLine($"{addedSales} sales added...");
+                    Console.WriteLine();
+                }
+                catch (SqlException sqlex) { Console.WriteLine(sqlex.Message);}
+                finally 
+                {
+                    Console.ReadKey();
+                    Console.Clear();
+                }
+                
+                
 
                 //2. Відобразити інформацію про всі продажі за певний період
-                GetSalesInfo(new DateTime(2023,7,1), new DateTime(2023, 7, 18),  connection);
+                Console.WriteLine("\t2. Відобразити інформацію про всі продажі за певний період");
+                int y1, y2, m1, m2, d1, d2;
+                DateTime startTime, endTime;
+                try
+                {
+                    y1 = GetInt("\tEnter start date year : ");
+                    m1 = GetInt("\tEnter start date month : ");
+                    d1 = GetInt("\tEnter start date day : ");
+                    startTime = new DateTime(y1, m1, d1);
+                    y2 = GetInt("\tEnter end date year : ");
+                    m2 = GetInt("\tEnter end date month : ");
+                    d2 = GetInt("\tEnter end date day : ");
+                    endTime = new DateTime(y2, m2, d2);
+                    GetSalesInfo(startTime, endTime, connection);
+                    Console.WriteLine();
+                }
+                catch (SqlException sqlex) { Console.WriteLine(sqlex.Message);}
+                catch (Exception ex) { Console.WriteLine(ex.Message);}
+                finally
+                {
+                    Console.ReadKey();
+                    Console.Clear();
+                }
+               
+                
+
+                //3. Показати останню покупку певного покупця по імені та прізвищу
+                Console.WriteLine("\t3. Показати останню покупку певного покупця по імені та прізвищу");
+                string name, surname;
+                Console.Write("Enter seller name :");
+                name = Console.ReadLine() ?? "";
+                Console.Write("Enter seller surname :");
+                surname = Console.ReadLine() ?? "";
+
+                try { GetLastSale(name, surname, connection); }
+                catch (SqlException sqlex) { Console.WriteLine(sqlex.Message);}
+                finally
+                {
+                    Console.ReadKey();
+                    Console.Clear();
+                }
+
+
+                //4. Видалити продавця або покупця по id
+                Console.WriteLine("\t4. Видалити продавця або покупця по id");
+                bool key = GetBool("Delete ", "seller", "buyer");
+                int Id = key? GetInt("\tEnter seller ID :"): GetInt("\tEnter buyer ID :");
+                int deleted = DelSellelBuyer(Id, connection, key);
+                Console.WriteLine($"{deleted} rows deleted...");
                 Console.WriteLine();
+                Console.ReadKey();
+                Console.Clear();
+
+                //5. Показати продавця, загальна сума продаж якого є найбільшою
+                Console.WriteLine("\t5. Показати продавця, загальна сума продаж якого є найбільшою");
+                GetTopBuyer(connection);
+                Console.WriteLine();
+                Console.ReadKey();
+                Console.Clear();
             }
 
         }
@@ -39,19 +119,51 @@ namespace Sales_SQL_C_
         //2
         static void GetSalesInfo(DateTime startDate, DateTime endDate, SqlConnection connection)
         {
-            string sqlQuery = "select concat(sl.Name,' ',sl.Surname ) as [Seller], concat(b.Name,' ',b.Surname ) as [Buyer],s.SaleDate as [Sale Date],s.SaleAmount as [Sale Amount] from Sales as s join Sellers as sl on sl.Id = s.SellerId join Buyers as  b on b.Id = s.BuyerId where s.SaleDate between @startDate and @endDate order by s.SaleDate";
+            string sqlQuery = "select concat(sl.Name,' ',sl.Surname ) as [Seller], concat(b.Name,' ',b.Surname ) as [Buyer],s.SaleDate as [Sale Date],s.SaleAmount as [Sale Amount] " +
+                              "from Sales as s join Sellers as sl on sl.Id = s.SellerId " +
+                              "join Buyers as  b on b.Id = s.BuyerId " +
+                              "where s.SaleDate between @startDate and @endDate order by s.SaleDate";
             SqlCommand cmd = new (sqlQuery, connection);
             cmd.Parameters.AddWithValue("@startDate", startDate);
             cmd.Parameters.AddWithValue("@endDate", endDate);
             SqlDataReader reader = cmd.ExecuteReader();
             ReaderShow(reader);
-            reader.Close();
+        }
+        //3
+        static void GetLastSale(string name, string surname, SqlConnection connection)
+        {
+            string sqlQuery = "select top 1  concat(sl.Name,' ',sl.Surname) as [Seller], s.SaleDate as [Last Sale Date],s.SaleAmount as [Sale Amount] " +
+                              "from Sales as s join Sellers as sl on sl.Id = s.SellerId " +
+                              "where  concat(sl.Name,sl.Surname) = concat(@name,@surname) order by s.SaleDate desc";
+            SqlCommand cmd = new (sqlQuery, connection);
+            cmd.Parameters.AddWithValue("@name",name);
+            cmd.Parameters.AddWithValue("@surname", surname);
+            SqlDataReader reader = cmd.ExecuteReader();
+            ReaderShow(reader);
+        }
+        //4
+        static int DelSellelBuyer(int Id , SqlConnection connection , bool sellerId = true)
+        {
+            string sqlQuery = sellerId ? $"delete from Sellers where Sellers.Id = {Id}" : $"delete from Buyers where Buyers.Id = {Id}";
+            SqlCommand cmd = new(sqlQuery, connection);
+            return cmd.ExecuteNonQuery();
+        }
+        //5 
+        static void GetTopBuyer(SqlConnection connection)
+        {
+            string sqlQuery = "select top 1  concat(b.Name,' ',b.Surname) as [Top Buyer],sum(s.SaleAmount) as [Sale Amount] " +
+                              "from Sales as s join Buyers as b on b.Id = s.SellerId " +
+                              "group by b.Name,b.Surname order by 'Sale Amount' desc";
+            SqlCommand cmd = new(sqlQuery, connection);
+            SqlDataReader reader = cmd.ExecuteReader();
+            ReaderShow(reader);
         }
 
-        //-------------Query help methods--------------
+
+        //------------- Help methods --------------
         static void ReaderShow(SqlDataReader reader)
         {
-            string divider = "  " + new string('-', 101) ;
+            string divider = "  " + new string('-', reader.FieldCount * 25 + 1) ;
             string startformater = "  |  {0,-20}";
             string endFormater = startformater + "  |\n";
             Console.WriteLine(divider);
@@ -79,7 +191,32 @@ namespace Sales_SQL_C_
                 }
             }
             Console.Write(divider);
+            reader.Close();
         }
+
+
+        static bool GetBool(string message,string variant1,string variant2)
+        {
+            int choose = 0;
+            while (choose !=1 && choose != 2){ choose = GetInt($" You wont {message} {variant1}[1] or {variant2}[2] : "); };
+            return choose == 1;
+        }
+
+        static int GetInt(string message)
+        {
+            int res;
+            do { Console.Write(message);}
+            while (!int.TryParse(Console.ReadLine(), out res));
+            return res;
+        }
+        static double GetDouble(string message)
+        {
+            double res;
+            do { Console.Write(message); }
+            while (!double.TryParse(Console.ReadLine(), out res));
+            return res;
+        }
+
     }
    
 }

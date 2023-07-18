@@ -29,8 +29,8 @@ create  table [Sellers]
 create  table [Sales]
 (
     [Id] int not null primary key identity,
-    [SellerId] int not null references [Sellers](Id) ,
-    [BuyerId] int not null references [Buyers](Id) ,
+    [SellerId] int not null references [Sellers](Id)  on delete cascade,
+    [BuyerId] int not null references [Buyers](Id) on delete cascade,
     [SaleAmount] money not null check( [SaleAmount] >= 0) default(0),
     [SaleDate] date not null check ([SaleDate] <= getdate())
 );
